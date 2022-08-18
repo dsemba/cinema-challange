@@ -1,12 +1,24 @@
 package com.highway.cinema.domain;
 
-import lombok.Data;
+import lombok.Getter;
 
 import java.time.Duration;
 
-@Data
+@Getter
 public class Movie {
     private String title;
     private Duration duration;
     private boolean glassesRequired;
+    private boolean isPremier;
+
+    public Movie(String title, int durationInMinutes, boolean glassesRequired) {
+        this.title = title;
+        this.duration = Duration.ofMinutes(durationInMinutes);
+        this.glassesRequired = glassesRequired;
+    }
+
+    public Movie(String title, int durationInMinutes, boolean glassesRequired, boolean isPremier) {
+        this(title, durationInMinutes, glassesRequired);
+        this.isPremier = isPremier;
+    }
 }

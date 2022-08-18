@@ -1,12 +1,14 @@
 package com.highway.cinema.domain;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class Room {
-    private String name;
+    private final String name;
+    private int cleaningDurationInMinutes;
 
-    public Room(String name) {
+    public Room(String name, int cleaningDurationInMinutes) {
         this.name = name;
+        this.cleaningDurationInMinutes = cleaningDurationInMinutes;
     }
 }

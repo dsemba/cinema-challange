@@ -52,5 +52,9 @@ when two Jadwiga's add different movies to same time and same room.
 - Code should be on github repo.
 
 
-
-
+#### To clarify:
+- does requirement for 3d glasses have any influence on how movies are schedules? or just a property?
+- "Every room have different cleaning slot." meaning it takes a different amount of time to clean up each room?
+- can there be no cleaning or 0 minutes maintenance after a seans?
+- do 17-21 for scheduling premieres apply to the starting date or to the whole event?
+- can the cleaning be done after opening hours? should it be scheduled for the next day?

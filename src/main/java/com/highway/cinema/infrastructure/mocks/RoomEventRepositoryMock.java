@@ -1,15 +1,15 @@
-package com.highway.cinema.infrastructure.config.mocks;
+package com.highway.cinema.infrastructure.mocks;
 
 import com.highway.cinema.domain.Room;
 import com.highway.cinema.domain.RoomEvent;
-import com.highway.cinema.domain.RoomEventRepository;
+import com.highway.cinema.domain.dao.RoomEventRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class RoomEventRepositoryMock implements RoomEventRepository {
-    private List<RoomEvent> roomEvents = new ArrayList<>();
+    private final List<RoomEvent> roomEvents = new ArrayList<>();
 
     @Override
     public List<RoomEvent> findAll() {
@@ -21,5 +21,10 @@ public class RoomEventRepositoryMock implements RoomEventRepository {
         return roomEvents.stream()
                 .filter(x -> x.getRoom().equals(room))
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void save(RoomEvent roomEvent) {
+        roomEvents.add(roomEvent);
     }
 }

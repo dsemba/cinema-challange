@@ -1,10 +1,15 @@
 package com.highway.cinema.domain;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
-public class Seans {
+import java.time.ZonedDateTime;
+
+@Getter
+public class Seans extends RoomEvent {
     private Movie movie;
-    private RoomEvent roomEvent;
 
+    public Seans(Movie movie, Room room, ZonedDateTime start) {
+        super(RoomEventType.SEANS, room, start, start.plus(movie.getDuration()));
+        this.movie = movie;
+    }
 }
