@@ -2,7 +2,6 @@ package com.highway.cinema.application.service;
 
 import com.highway.cinema.domain.*;
 import com.highway.cinema.domain.dao.RoomEventRepository;
-import com.highway.cinema.domain.Settings;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -51,13 +50,8 @@ public class SeansSchedulingService {
     }
 
     private boolean overlapsWithOtherEvents(RoomEvent roomEvent) {
-        List<RoomEvent> roomEvents = roomEventRepository.findByRoom(roomEvent.getRoom());
-        for (RoomEvent existing : roomEvents) {
-            if (existing.getEnd().isAfter(roomEvent.getStart()) && existing.getStart().isBefore(roomEvent.getEnd())) {
-                return true;
-            }
-        }
-        return false;
+        return roomEventRepository
+                .inSameRoomAndOverlapsWithAnyWithinTimeRange(roomEvent.getRoom(), roomEvent.getStart(), roomEvent.getEnd());
     }
 
     public List<RoomEvent> getSeansBoard() {

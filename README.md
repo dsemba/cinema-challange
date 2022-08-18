@@ -58,3 +58,4 @@ when two Jadwiga's add different movies to same time and same room.
 - can there be no cleaning or 0 minutes maintenance after a seans?
 - do 17-21 for scheduling premieres apply to the starting date or to the whole event?
 - can the cleaning be done after opening hours? should it be scheduled for the next day?
+- can the same movie be shown in different rooms at the same time?

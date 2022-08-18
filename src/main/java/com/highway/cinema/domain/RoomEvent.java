@@ -3,6 +3,7 @@ package com.highway.cinema.domain;
 import lombok.Getter;
 
 import java.time.ZonedDateTime;
+import java.util.Objects;
 
 @Getter
 public abstract class RoomEvent {
