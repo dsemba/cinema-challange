@@ -1,3 +1,12 @@
+## To clarify:
+- does requirement for 3d glasses have any influence on how movies are schedules? or just a property?
+- "Every room have different cleaning slot." meaning it takes a different amount of time to clean up each room?
+- can there be no cleaning or 0 minutes maintenance after a seans?
+- does 17-21 for scheduling premieres apply to the starting date or to the whole event?
+- can the cleaning be done after opening hours? should it be scheduled for the next day?
+- can the same movie be shown in different rooms at the same time?
+
+
 # High Way Cinema
 
 Our client has a cinema in Wrocław, Poland. Currently all movies schedule is done by Pen and Paper on big board where there is plan for given time for all movies the cinema shows. Planner Jadwiga need to schedule seans(seans is movie schedule at given time)for best used of the space.
@@ -50,12 +59,3 @@ when two Jadwiga's add different movies to same time and same room.
 - Would be good to describe decision you make so future developers won't be scratching the head about the reasoning.
 - Test should be green
 - Code should be on github repo.
-
-
-#### To clarify:
-- does requirement for 3d glasses have any influence on how movies are schedules? or just a property?
-- "Every room have different cleaning slot." meaning it takes a different amount of time to clean up each room?
-- can there be no cleaning or 0 minutes maintenance after a seans?
-- do 17-21 for scheduling premieres apply to the starting date or to the whole event?
-- can the cleaning be done after opening hours? should it be scheduled for the next day?
-- can the same movie be shown in different rooms at the same time?
