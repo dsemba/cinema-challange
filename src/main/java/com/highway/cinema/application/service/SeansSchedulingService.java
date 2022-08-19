@@ -15,7 +15,7 @@ public class SeansSchedulingService {
         this.settings = settings;
     }
 
-    public Seans scheduleSeans(Movie movie, Room room, ZonedDateTime startAt) {
+    public synchronized Seans scheduleSeans(Movie movie, Room room, ZonedDateTime startAt) {
         Seans seans = new Seans(movie, room, startAt);
         ZonedDateTime seansEnd = startAt.plus(movie.getDuration());
         ScheduledMaintenance maintenance = new ScheduledMaintenance(room, seansEnd);

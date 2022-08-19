@@ -5,7 +5,7 @@ import lombok.Getter;
 @Getter
 public class Room {
     private final String name;
-    private int cleaningDurationInMinutes;
+    private final int cleaningDurationInMinutes;
 
     public Room(String name, int cleaningDurationInMinutes) {
         this.name = name;

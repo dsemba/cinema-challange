@@ -2,18 +2,23 @@ package com.highway.cinema.application.service;
 
 import com.highway.cinema.domain.*;
 import com.highway.cinema.domain.dao.RoomEventRepository;
-import com.highway.cinema.domain.Settings;
 import com.highway.cinema.infrastructure.mocks.RoomEventRepositoryMock;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
+@Slf4j
 public class SeansSchedulingServiceTest {
 
     @Test
@@ -61,9 +66,33 @@ public class SeansSchedulingServiceTest {
         Seans seans2 = service.scheduleSeans(movie2, room, scheduledAt.plus(movie.getDuration()).plusMinutes(10));
     }
 
-    @Ignore("Not implemented yet")
     @Test
-    public void shouldNotConcurrentlyScheduleSeansesAtTheSameTimeOrLocation() {
+    public void shouldNotConcurrentlyScheduleSeansesAtTheSameTimeOrLocation() throws ExecutionException, InterruptedException {
+        RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
+        SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, new Settings());
+        Movie movie = new Movie("Shrek", 90, false);
+        Movie movie2 = new Movie("Avengers", 100, true);
+        Room room = new Room("Room 1", 20);
+        ZonedDateTime scheduledAt = ZonedDateTime.now();
+
+        ExecutorService es = Executors.newFixedThreadPool(2);
+        Future<Seans> future = es.submit(() -> service.scheduleSeans(movie, room, scheduledAt));
+        Future<Seans> future2 = es.submit(() -> service.scheduleSeans(movie2, room, scheduledAt.plus(movie.getDuration()).plusMinutes(10)));
+        Seans seans = null, seans2;
+        Throwable thrown = null;
+        try {
+            seans = future.get();
+            seans2 = future2.get();
+        } catch (ExecutionException exception) {
+            thrown = exception.getCause();
+        }
+        assertNotNull(thrown);
+        assertEquals(SeansSchedulingService.OverlappingEventException.class, thrown.getClass());
+        assertNotNull(seans);
+        assertEquals(1, roomEventRepository.findAll()
+                .stream()
+                .filter(x -> x.getType().equals(RoomEventType.SEANS))
+                .count());
     }
 
     @Ignore("Not implemented yet")
@@ -80,7 +109,7 @@ public class SeansSchedulingServiceTest {
         SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, settings);
         Movie movie = new Movie("Shrek", 90, false, true);
         Room room = new Room("Room 1", 20);
-        ZonedDateTime scheduledAt = ZonedDateTime.of(2011, 3, 10, 16, 59, 59,999, ZoneId.systemDefault());
+        ZonedDateTime scheduledAt = ZonedDateTime.of(2011, 3, 10, 16, 59, 59, 999, ZoneId.systemDefault());
 
         Seans seans = service.scheduleSeans(movie, room, scheduledAt);
     }
@@ -94,7 +123,7 @@ public class SeansSchedulingServiceTest {
         SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, settings);
         Movie movie = new Movie("Shrek", 90, false, true);
         Room room = new Room("Room 1", 20);
-        ZonedDateTime scheduledAt = ZonedDateTime.of(2011, 3, 10, 7, 59, 59,999, ZoneId.systemDefault());
+        ZonedDateTime scheduledAt = ZonedDateTime.of(2011, 3, 10, 7, 59, 59, 999, ZoneId.systemDefault());
 
         Seans seans = service.scheduleSeans(movie, room, scheduledAt);
     }
