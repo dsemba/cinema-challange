@@ -89,7 +89,7 @@ public class SeansSchedulingServiceTest {
         ExecutorService es = Executors.newFixedThreadPool(2);
         Future<Seans> future = es.submit(() -> schedule(seansScheduler, movie, room, scheduledAt));
         Future<Seans> future2 = es.submit(() -> schedule(seansScheduler, movie2, room, scheduledAt.plus(movie.getDuration()).plusMinutes(10)));
-        Seans seans = null, seans2;
+        Seans seans = null, seans2 = null;
         Throwable thrown = null;
         try {
             seans = future.get();
@@ -99,7 +99,7 @@ public class SeansSchedulingServiceTest {
         }
         assertNotNull(thrown);
         assertEquals(OverlappingEventException.class, thrown.getClass());
-        assertNotNull(seans);
+        assertTrue(seans != null || future2.get() != null);
         assertEquals(1, roomEventRepository.findAll()
                 .stream()
                 .filter(x -> x.getType().equals(RoomEventType.SCREENING))
