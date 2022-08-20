@@ -8,7 +8,6 @@ import lombok.Getter;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-@Getter
 public class Seans {
     private final MovieScreening screening;
     private final ScheduledMaintenance maintenance;

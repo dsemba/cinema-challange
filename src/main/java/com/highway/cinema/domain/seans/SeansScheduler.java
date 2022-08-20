@@ -24,9 +24,9 @@ public class SeansScheduler {
                 : null;
     }
 
-    public Seans scheduleIfAvailable(Seans seans) {
-        validateWithinHours(seans.getScreening());
-        validateWithinHours(seans.getMaintenance());
+    public synchronized Seans scheduleIfAvailable(Seans seans) {
+        seans.getEvents()
+                        .forEach(this::validateWithinHours);
         eventRoomScheduler.validateAndSchedule(seans.getEvents());
         return seans;
     }
