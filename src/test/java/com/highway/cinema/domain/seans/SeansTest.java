@@ -21,8 +21,10 @@ public class SeansTest {
         Movie movie = new Movie("Shrek", 90);
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.now();
+
         //when
         Seans seans = new Seans(movie, room, scheduledAt);
+
         //then
         List<RoomEvent> roomEventList = seans.getEvents();
         assertEquals(2, roomEventList.size());

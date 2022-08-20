@@ -1,4 +1,4 @@
-package com.highway.cinema.application.service;
+package com.highway.cinema.domain.seans;
 
 import com.highway.cinema.domain.*;
 import com.highway.cinema.domain.dao.RoomEventRepository;
@@ -25,10 +25,11 @@ import java.util.concurrent.Future;
 import static org.junit.Assert.*;
 
 @Slf4j
-public class SeansSchedulingServiceTest {
+public class SeansSchedulerTest {
 
     @Test
     public void shouldScheduleMaintenanceAfterEverySeans() {
+        //given
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
         EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
         SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, new Settings());
@@ -36,20 +37,22 @@ public class SeansSchedulingServiceTest {
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.now();
 
+        //when
         Seans seans = new Seans(movie, room, scheduledAt);
         seansScheduler.scheduleIfAvailable(seans);
 
+        //then
         Optional<RoomEvent> roomEvent = roomEventRepository.findByRoom(room)
                 .stream()
                 .filter(x -> x.getStart().isEqual(scheduledAt.plus(movie.getDuration())))
                 .findFirst();
-
         assertTrue(roomEvent.isPresent());
         assertEquals(roomEvent.get().getType(), RoomEventType.MAINTENANCE);
     }
 
     @Test(expected = OverlappingEventException.class)
     public void shouldNotScheduleOverlappingRoomEvents() {
+        //given
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
         EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
         SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, new Settings());
@@ -58,12 +61,14 @@ public class SeansSchedulingServiceTest {
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.now();
 
+        //when
         Seans seans = schedule(seansScheduler, movie, room, scheduledAt);
         Seans seans2 = schedule(seansScheduler, movie2, room, scheduledAt.plusMinutes(30));
     }
 
     @Test(expected = OverlappingEventException.class)
     public void shouldNotScheduleSeansWhenOverlapsWithMaintenance() {
+        //given
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
         EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
         SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, new Settings());
@@ -72,12 +77,14 @@ public class SeansSchedulingServiceTest {
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.now();
 
+        //when
         Seans seans = schedule(seansScheduler, movie, room, scheduledAt);
         Seans seans2 = schedule(seansScheduler, movie2, room, scheduledAt.plus(movie.getDuration()).plusMinutes(10));
     }
 
     @Test
     public void shouldNotConcurrentlyScheduleSeansesAtTheSameTimeOrLocation() throws ExecutionException, InterruptedException {
+        //given
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
         EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
         SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, new Settings());
@@ -86,6 +93,7 @@ public class SeansSchedulingServiceTest {
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.now();
 
+        //when
         ExecutorService es = Executors.newFixedThreadPool(2);
         Future<Seans> future = es.submit(() -> schedule(seansScheduler, movie, room, scheduledAt));
         Future<Seans> future2 = es.submit(() -> schedule(seansScheduler, movie2, room, scheduledAt.plus(movie.getDuration()).plusMinutes(10)));
@@ -97,6 +105,8 @@ public class SeansSchedulingServiceTest {
         } catch (ExecutionException exception) {
             thrown = exception.getCause();
         }
+
+        //then
         assertNotNull(thrown);
         assertEquals(OverlappingEventException.class, thrown.getClass());
         assertTrue(seans != null || future2.get() != null);
@@ -113,6 +123,7 @@ public class SeansSchedulingServiceTest {
 
     @Test(expected = ScheduledOutsideHoursRequiredForPremierException.class)
     public void shouldNotSchedulePremierOutsideDefinedTimeWindow() {
+        //given
         Settings settings = new Settings();
         settings.setPremieresRequiredSchedule(new TimeFrame(17, 21));
 
@@ -123,11 +134,13 @@ public class SeansSchedulingServiceTest {
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.of(2011, 3, 10, 16, 59, 59, 999, ZoneId.systemDefault());
 
+        //when
         schedule(seansScheduler, movie, room, scheduledAt);
     }
 
     @Test(expected = ScheduledOutsideOpeningHoursException.class)
     public void shouldNotScheduleSeansOutsideOpeningHours() {
+        //given
         Settings settings = new Settings();
         settings.setOpeningHours(new TimeFrame(8, 22));
 
@@ -138,6 +151,7 @@ public class SeansSchedulingServiceTest {
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.of(2011, 3, 10, 7, 59, 59, 999, ZoneId.systemDefault());
 
+        //when
         schedule(seansScheduler, movie, room, scheduledAt);
     }
 
