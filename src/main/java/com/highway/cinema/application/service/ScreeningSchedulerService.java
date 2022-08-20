@@ -19,6 +19,7 @@ public class ScreeningSchedulerService {
     public ScreeningSchedulerService(MovieRepository movieRepository, RoomRepository roomRepository, SeansSchedulingService seansSchedulingService) {
         this.movieRepository = movieRepository;
         this.roomRepository = roomRepository;
+        this.seansSchedulingService = seansSchedulingService;
     }
 
     public Seans addSeans(UUID movieId, UUID roomId, ZonedDateTime startAt) {

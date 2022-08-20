@@ -11,14 +11,18 @@ public class Movie extends IdentifiableEntity {
     private boolean glassesRequired;
     private boolean isPremier;
 
+    public Movie(String title, int durationInMinutes) {
+        this(title, durationInMinutes, false);
+    }
+
     public Movie(String title, int durationInMinutes, boolean glassesRequired) {
-        this.title = title;
-        this.duration = Duration.ofMinutes(durationInMinutes);
-        this.glassesRequired = glassesRequired;
+        this(title, durationInMinutes, glassesRequired, false);
     }
 
     public Movie(String title, int durationInMinutes, boolean glassesRequired, boolean isPremier) {
-        this(title, durationInMinutes, glassesRequired);
+        this.title = title;
+        this.duration = Duration.ofMinutes(durationInMinutes);
+        this.glassesRequired = glassesRequired;
         this.isPremier = isPremier;
     }
 }
