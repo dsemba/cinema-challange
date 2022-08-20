@@ -1,5 +1,6 @@
-package com.highway.cinema.domain;
+package com.highway.cinema.domain.seans;
 
+import com.highway.cinema.domain.TimeFrame;
 import lombok.Data;
 
 @Data

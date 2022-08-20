@@ -2,9 +2,12 @@ package com.highway.cinema.application.service;
 
 import com.highway.cinema.domain.*;
 import com.highway.cinema.domain.dao.RoomEventRepository;
-import com.highway.cinema.domain.exception.OverlappingEventException;
-import com.highway.cinema.domain.exception.ScheduledOutsideHoursRequiredForPremierException;
-import com.highway.cinema.domain.exception.ScheduledOutsideOpeningHoursException;
+import com.highway.cinema.domain.event.EventRoomScheduler;
+import com.highway.cinema.domain.seans.SeansScheduler;
+import com.highway.cinema.domain.seans.Settings;
+import com.highway.cinema.domain.seans.exception.OverlappingEventException;
+import com.highway.cinema.domain.seans.exception.ScheduledOutsideHoursRequiredForPremierException;
+import com.highway.cinema.domain.seans.exception.ScheduledOutsideOpeningHoursException;
 import com.highway.cinema.domain.seans.Seans;
 import com.highway.cinema.infrastructure.mocks.RoomEventRepositoryMock;
 import lombok.extern.slf4j.Slf4j;
@@ -27,12 +30,14 @@ public class SeansSchedulingServiceTest {
     @Test
     public void shouldScheduleMaintenanceAfterEverySeans() {
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
-        SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, new Settings());
+        EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
+        SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, new Settings());
         Movie movie = new Movie("Shrek", 90, false);
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.now();
 
-        Seans seans = service.scheduleSeans(movie, room, scheduledAt);
+        Seans seans = new Seans(movie, room, scheduledAt);
+        seansScheduler.scheduleIfAvailable(seans);
 
         Optional<RoomEvent> roomEvent = roomEventRepository.findByRoom(room)
                 .stream()
@@ -46,41 +51,44 @@ public class SeansSchedulingServiceTest {
     @Test(expected = OverlappingEventException.class)
     public void shouldNotScheduleOverlappingRoomEvents() {
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
-        SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, new Settings());
+        EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
+        SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, new Settings());
         Movie movie = new Movie("Shrek", 90, false);
         Movie movie2 = new Movie("Avengers", 100, true);
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.now();
 
-        Seans seans = service.scheduleSeans(movie, room, scheduledAt);
-        Seans seans2 = service.scheduleSeans(movie2, room, scheduledAt.plusMinutes(30));
+        Seans seans = schedule(seansScheduler, movie, room, scheduledAt);
+        Seans seans2 = schedule(seansScheduler, movie2, room, scheduledAt.plusMinutes(30));
     }
 
     @Test(expected = OverlappingEventException.class)
     public void shouldNotScheduleSeansWhenOverlapsWithMaintenance() {
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
-        SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, new Settings());
+        EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
+        SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, new Settings());
         Movie movie = new Movie("Shrek", 90, false);
         Movie movie2 = new Movie("Avengers", 100, true);
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.now();
 
-        Seans seans = service.scheduleSeans(movie, room, scheduledAt);
-        Seans seans2 = service.scheduleSeans(movie2, room, scheduledAt.plus(movie.getDuration()).plusMinutes(10));
+        Seans seans = schedule(seansScheduler, movie, room, scheduledAt);
+        Seans seans2 = schedule(seansScheduler, movie2, room, scheduledAt.plus(movie.getDuration()).plusMinutes(10));
     }
 
     @Test
     public void shouldNotConcurrentlyScheduleSeansesAtTheSameTimeOrLocation() throws ExecutionException, InterruptedException {
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
-        SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, new Settings());
+        EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
+        SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, new Settings());
         Movie movie = new Movie("Shrek", 90, false);
         Movie movie2 = new Movie("Avengers", 100, true);
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.now();
 
         ExecutorService es = Executors.newFixedThreadPool(2);
-        Future<Seans> future = es.submit(() -> service.scheduleSeans(movie, room, scheduledAt));
-        Future<Seans> future2 = es.submit(() -> service.scheduleSeans(movie2, room, scheduledAt.plus(movie.getDuration()).plusMinutes(10)));
+        Future<Seans> future = es.submit(() -> schedule(seansScheduler, movie, room, scheduledAt));
+        Future<Seans> future2 = es.submit(() -> schedule(seansScheduler, movie2, room, scheduledAt.plus(movie.getDuration()).plusMinutes(10)));
         Seans seans = null, seans2;
         Throwable thrown = null;
         try {
@@ -104,17 +112,18 @@ public class SeansSchedulingServiceTest {
     }
 
     @Test(expected = ScheduledOutsideHoursRequiredForPremierException.class)
-    public void shouldNotSchedulePremierOnlyOutsideDefinedTimeWindow() {
+    public void shouldNotSchedulePremierOutsideDefinedTimeWindow() {
         Settings settings = new Settings();
         settings.setPremieresRequiredSchedule(new TimeFrame(17, 21));
 
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
-        SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, settings);
+        EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
+        SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, settings);
         Movie movie = new Movie("Shrek", 90, false, true);
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.of(2011, 3, 10, 16, 59, 59, 999, ZoneId.systemDefault());
 
-        Seans seans = service.scheduleSeans(movie, room, scheduledAt);
+        schedule(seansScheduler, movie, room, scheduledAt);
     }
 
     @Test(expected = ScheduledOutsideOpeningHoursException.class)
@@ -123,11 +132,17 @@ public class SeansSchedulingServiceTest {
         settings.setOpeningHours(new TimeFrame(8, 22));
 
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
-        SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, settings);
+        EventRoomScheduler eventRoomScheduler = new EventRoomScheduler(roomEventRepository);
+        SeansScheduler seansScheduler = new SeansScheduler(eventRoomScheduler, settings);
         Movie movie = new Movie("Shrek", 90, false, true);
         Room room = new Room("Room 1", 20);
         ZonedDateTime scheduledAt = ZonedDateTime.of(2011, 3, 10, 7, 59, 59, 999, ZoneId.systemDefault());
 
-        Seans seans = service.scheduleSeans(movie, room, scheduledAt);
+        schedule(seansScheduler, movie, room, scheduledAt);
+    }
+
+    private Seans schedule(SeansScheduler seansScheduler, Movie movie, Room room, ZonedDateTime scheduledAt) {
+        Seans seans = new Seans(movie, room, scheduledAt);
+        return seansScheduler.scheduleIfAvailable(seans);
     }
 }

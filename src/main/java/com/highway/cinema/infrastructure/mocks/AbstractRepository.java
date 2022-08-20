@@ -14,8 +14,8 @@ public abstract class AbstractRepository<T> implements Repository<T> {
     }
 
     @Override
-    public T save(T object) {
-        entities.add(object);
-        return object;
+    public T save(T entity) {
+        entities.add(entity);
+        return entity;
     }
 }

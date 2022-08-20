@@ -3,23 +3,23 @@ package com.highway.cinema.application.service;
 import com.highway.cinema.domain.Movie;
 import com.highway.cinema.domain.Room;
 import com.highway.cinema.domain.seans.Seans;
-import com.highway.cinema.domain.SeansSchedulingService;
 import com.highway.cinema.domain.dao.MovieRepository;
 import com.highway.cinema.domain.dao.RoomRepository;
+import com.highway.cinema.domain.seans.SeansScheduler;
 
 import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 
-public class ScreeningSchedulerService {
+public class PlannerService {
     private MovieRepository movieRepository;
     private RoomRepository roomRepository;
-    private SeansSchedulingService seansSchedulingService;
+    private SeansScheduler seansScheduler;
 
-    public ScreeningSchedulerService(MovieRepository movieRepository, RoomRepository roomRepository, SeansSchedulingService seansSchedulingService) {
+    public PlannerService(MovieRepository movieRepository, RoomRepository roomRepository, SeansScheduler seansScheduler) {
         this.movieRepository = movieRepository;
         this.roomRepository = roomRepository;
-        this.seansSchedulingService = seansSchedulingService;
+        this.seansScheduler = seansScheduler;
     }
 
     public Seans addSeans(UUID movieId, UUID roomId, ZonedDateTime startAt) {
@@ -28,9 +28,9 @@ public class ScreeningSchedulerService {
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(RoomNotFoundException::new);
 
-        return seansSchedulingService.scheduleSeans(movie, room, startAt);
+        Seans seans = new Seans(movie, room, startAt);
+        return seansScheduler.scheduleIfAvailable(seans);
     }
-
 
     public List<Seans> getAvailableSlots() {
         return List.of();

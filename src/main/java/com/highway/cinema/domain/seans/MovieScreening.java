@@ -9,7 +9,6 @@ import lombok.Getter;
 import java.time.ZonedDateTime;
 
 @Getter
-public
 class MovieScreening extends RoomEvent {
     private final Movie movie;
 
