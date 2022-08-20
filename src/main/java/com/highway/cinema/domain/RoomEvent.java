@@ -6,7 +6,7 @@ import java.time.ZonedDateTime;
 import java.util.Objects;
 
 @Getter
-public abstract class RoomEvent {
+public abstract class RoomEvent extends IdentifiableEntity {
     private final RoomEventType type;
     private final Room room;
     private final ZonedDateTime start;

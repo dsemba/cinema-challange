@@ -1,4 +1,6 @@
 package com.highway.cinema.domain.dao;
 
-public interface RoomRepository {
+import com.highway.cinema.domain.Room;
+
+public interface RoomRepository extends Repository<Room> {
 }

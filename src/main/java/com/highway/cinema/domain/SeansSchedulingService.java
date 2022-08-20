@@ -1,8 +1,8 @@
-package com.highway.cinema.application.service;
+package com.highway.cinema.domain;
 
-import com.highway.cinema.domain.*;
 import com.highway.cinema.domain.dao.RoomEventRepository;
 
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
 
@@ -46,7 +46,7 @@ public class SeansSchedulingService {
     private boolean scheduledWithinTimeWindow(Seans seans, TimeFrame timeFrame) {
         return timeFrame == null
                 || (seans.getStart().getHour() >= timeFrame.getStartHour()
-                    && seans.getEnd().getHour() < timeFrame.getEndHour());
+                && seans.getEnd().getHour() < timeFrame.getEndHour());
     }
 
     private boolean overlapsWithOtherEvents(RoomEvent roomEvent) {
@@ -54,10 +54,11 @@ public class SeansSchedulingService {
                 .inSameRoomAndOverlapsWithAnyWithinTimeRange(roomEvent.getRoom(), roomEvent.getStart(), roomEvent.getEnd());
     }
 
-    public List<RoomEvent> getSeansBoard() {
-        //TODO: return all room events with their types (seans, maintenance, out of service)
-        return roomEventRepository.findAll();
-    }
+//    private List<TimeFrame> getAvailableSlots(Room room, LocalDate localDate) {
+//        return roomEventRepository
+//                .inSameRoomAndOverlapsWithAnyWithinTimeRange(roomEvent.getRoom(), roomEvent.getStart(), roomEvent.getEnd());
+//        return List.of();
+//    }
 
     public static final class OverlappingEventException extends RuntimeException {
     }

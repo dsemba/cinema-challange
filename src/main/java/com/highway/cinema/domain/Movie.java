@@ -5,7 +5,7 @@ import lombok.Getter;
 import java.time.Duration;
 
 @Getter
-public class Movie {
+public class Movie extends IdentifiableEntity {
     private String title;
     private Duration duration;
     private boolean glassesRequired;

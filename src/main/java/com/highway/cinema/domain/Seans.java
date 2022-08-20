@@ -6,7 +6,7 @@ import java.time.ZonedDateTime;
 
 @Getter
 public class Seans extends RoomEvent {
-    private Movie movie;
+    private final Movie movie;
 
     public Seans(Movie movie, Room room, ZonedDateTime start) {
         super(RoomEventType.SEANS, room, start, start.plus(movie.getDuration()));

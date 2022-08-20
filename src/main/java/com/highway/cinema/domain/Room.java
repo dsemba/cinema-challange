@@ -3,7 +3,7 @@ package com.highway.cinema.domain;
 import lombok.Getter;
 
 @Getter
-public class Room {
+public class Room extends IdentifiableEntity{
     private final String name;
     private final int cleaningDurationInMinutes;
 
