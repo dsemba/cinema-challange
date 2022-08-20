@@ -2,7 +2,7 @@ package com.highway.cinema.application.service;
 
 import com.highway.cinema.domain.Movie;
 import com.highway.cinema.domain.Room;
-import com.highway.cinema.domain.Seans;
+import com.highway.cinema.domain.seans.Seans;
 import com.highway.cinema.domain.SeansSchedulingService;
 import com.highway.cinema.domain.dao.MovieRepository;
 import com.highway.cinema.domain.dao.RoomRepository;

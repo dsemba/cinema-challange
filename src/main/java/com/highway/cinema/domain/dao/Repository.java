@@ -8,5 +8,4 @@ public interface Repository<T> {
     Optional<T> findById(UUID id);
     List<T> findAll();
     T save(T object);
-    void delete(UUID id);
 }

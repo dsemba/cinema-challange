@@ -1,10 +1,14 @@
 package com.highway.cinema.domain;
 
 import com.highway.cinema.domain.dao.RoomEventRepository;
+import com.highway.cinema.domain.exception.OverlappingEventException;
+import com.highway.cinema.domain.exception.ScheduledOutsideHoursRequiredForPremierException;
+import com.highway.cinema.domain.exception.ScheduledOutsideOpeningHoursException;
+import com.highway.cinema.domain.seans.MovieScreening;
+import com.highway.cinema.domain.seans.ScheduledMaintenance;
+import com.highway.cinema.domain.seans.Seans;
 
-import java.time.LocalDate;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 public class SeansSchedulingService {
     private RoomEventRepository roomEventRepository;
@@ -17,55 +21,40 @@ public class SeansSchedulingService {
 
     public synchronized Seans scheduleSeans(Movie movie, Room room, ZonedDateTime startAt) {
         Seans seans = new Seans(movie, room, startAt);
-        ZonedDateTime seansEnd = startAt.plus(movie.getDuration());
-        ScheduledMaintenance maintenance = new ScheduledMaintenance(room, seansEnd);
+        MovieScreening screening = seans.getScreening();
+        ScheduledMaintenance maintenance = seans.getMaintenance();
 
-        if (overlapsWithOtherEvents(seans) || overlapsWithOtherEvents(maintenance)) {
+        if (overlapsWithOtherEvents(screening) || overlapsWithOtherEvents(maintenance)) {
             throw new OverlappingEventException();
         }
-        if (!scheduledWithinOpeningHours(seans)) {
+        if (!scheduledWithinOpeningHours(screening)) {
             throw new ScheduledOutsideOpeningHoursException();
         }
-        if (seans.getMovie().isPremier() && !premierScheduledWithinRequiredHours(seans)) {
+        if (screening.getMovie().isPremier() && !premierScheduledWithinRequiredHours(screening)) {
             throw new ScheduledOutsideHoursRequiredForPremierException();
         }
 
-        roomEventRepository.save(seans);
+        roomEventRepository.save(screening);
         roomEventRepository.save(maintenance);
         return seans;
     }
 
-    private boolean scheduledWithinOpeningHours(Seans seans) {
-        return scheduledWithinTimeWindow(seans, settings.getOpeningHours());
+    private boolean scheduledWithinOpeningHours(MovieScreening screening) {
+        return scheduledWithinTimeWindow(screening, settings.getOpeningHours());
     }
 
-    private boolean premierScheduledWithinRequiredHours(Seans seans) {
-        return scheduledWithinTimeWindow(seans, settings.getPremieresRequiredSchedule());
+    private boolean premierScheduledWithinRequiredHours(MovieScreening screening) {
+        return scheduledWithinTimeWindow(screening, settings.getPremieresRequiredSchedule());
     }
 
-    private boolean scheduledWithinTimeWindow(Seans seans, TimeFrame timeFrame) {
+    private boolean scheduledWithinTimeWindow(MovieScreening screening, TimeFrame timeFrame) {
         return timeFrame == null
-                || (seans.getStart().getHour() >= timeFrame.getStartHour()
-                && seans.getEnd().getHour() < timeFrame.getEndHour());
+                || (screening.getStart().getHour() >= timeFrame.getStartHour()
+                && screening.getEnd().getHour() < timeFrame.getEndHour());
     }
 
     private boolean overlapsWithOtherEvents(RoomEvent roomEvent) {
         return roomEventRepository
                 .inSameRoomAndOverlapsWithAnyWithinTimeRange(roomEvent.getRoom(), roomEvent.getStart(), roomEvent.getEnd());
-    }
-
-//    private List<TimeFrame> getAvailableSlots(Room room, LocalDate localDate) {
-//        return roomEventRepository
-//                .inSameRoomAndOverlapsWithAnyWithinTimeRange(roomEvent.getRoom(), roomEvent.getStart(), roomEvent.getEnd());
-//        return List.of();
-//    }
-
-    public static final class OverlappingEventException extends RuntimeException {
-    }
-
-    public static final class ScheduledOutsideOpeningHoursException extends RuntimeException {
-    }
-
-    public static final class ScheduledOutsideHoursRequiredForPremierException extends RuntimeException {
     }
 }

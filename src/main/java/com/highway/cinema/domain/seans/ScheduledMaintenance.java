@@ -1,4 +1,8 @@
-package com.highway.cinema.domain;
+package com.highway.cinema.domain.seans;
+
+import com.highway.cinema.domain.Room;
+import com.highway.cinema.domain.RoomEvent;
+import com.highway.cinema.domain.RoomEventType;
 
 import java.time.ZonedDateTime;
 

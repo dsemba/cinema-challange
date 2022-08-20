@@ -6,10 +6,10 @@ import java.time.Duration;
 
 @Getter
 public class Movie extends IdentifiableEntity {
-    private String title;
-    private Duration duration;
-    private boolean glassesRequired;
-    private boolean isPremier;
+    private final String title;
+    private final Duration duration;
+    private final boolean glassesRequired;
+    private final boolean isPremier;
 
     public Movie(String title, int durationInMinutes) {
         this(title, durationInMinutes, false);

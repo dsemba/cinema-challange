@@ -4,6 +4,7 @@ import com.highway.cinema.domain.*;
 import com.highway.cinema.domain.dao.MovieRepository;
 import com.highway.cinema.domain.dao.RoomEventRepository;
 import com.highway.cinema.domain.dao.RoomRepository;
+import com.highway.cinema.domain.seans.Seans;
 import com.highway.cinema.infrastructure.mocks.MovieRepositoryMock;
 import com.highway.cinema.infrastructure.mocks.RoomEventRepositoryMock;
 import com.highway.cinema.infrastructure.mocks.RoomRepositoryMock;
@@ -33,9 +34,9 @@ public class ScreeningSchedulerServiceTest {
         Seans seans = screeningSchedulerService.addSeans(movie.getUuid(), room.getUuid(), scheduledAt);
         //then
         assertNotNull(seans);
-        assertEquals(movie, seans.getMovie());
-        assertEquals(room, seans.getRoom());
-        assertEquals(scheduledAt, seans.getStart());
-        assertEquals(scheduledAt.plusMinutes(movie.getDuration().toMinutes()), seans.getEnd());
+        assertEquals(movie, seans.getScreening().getMovie());
+        assertEquals(room, seans.getScreening().getRoom());
+        assertEquals(scheduledAt, seans.getScreening().getStart());
+        assertEquals(scheduledAt.plusMinutes(movie.getDuration().toMinutes()), seans.getScreening().getEnd());
     }
 }

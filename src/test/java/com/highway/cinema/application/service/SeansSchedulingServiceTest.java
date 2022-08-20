@@ -2,6 +2,10 @@ package com.highway.cinema.application.service;
 
 import com.highway.cinema.domain.*;
 import com.highway.cinema.domain.dao.RoomEventRepository;
+import com.highway.cinema.domain.exception.OverlappingEventException;
+import com.highway.cinema.domain.exception.ScheduledOutsideHoursRequiredForPremierException;
+import com.highway.cinema.domain.exception.ScheduledOutsideOpeningHoursException;
+import com.highway.cinema.domain.seans.Seans;
 import com.highway.cinema.infrastructure.mocks.RoomEventRepositoryMock;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Ignore;
@@ -39,7 +43,7 @@ public class SeansSchedulingServiceTest {
         assertEquals(roomEvent.get().getType(), RoomEventType.MAINTENANCE);
     }
 
-    @Test(expected = SeansSchedulingService.OverlappingEventException.class)
+    @Test(expected = OverlappingEventException.class)
     public void shouldNotScheduleOverlappingRoomEvents() {
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
         SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, new Settings());
@@ -52,7 +56,7 @@ public class SeansSchedulingServiceTest {
         Seans seans2 = service.scheduleSeans(movie2, room, scheduledAt.plusMinutes(30));
     }
 
-    @Test(expected = SeansSchedulingService.OverlappingEventException.class)
+    @Test(expected = OverlappingEventException.class)
     public void shouldNotScheduleSeansWhenOverlapsWithMaintenance() {
         RoomEventRepository roomEventRepository = new RoomEventRepositoryMock();
         SeansSchedulingService service = new SeansSchedulingService(roomEventRepository, new Settings());
@@ -86,11 +90,11 @@ public class SeansSchedulingServiceTest {
             thrown = exception.getCause();
         }
         assertNotNull(thrown);
-        assertEquals(SeansSchedulingService.OverlappingEventException.class, thrown.getClass());
+        assertEquals(OverlappingEventException.class, thrown.getClass());
         assertNotNull(seans);
         assertEquals(1, roomEventRepository.findAll()
                 .stream()
-                .filter(x -> x.getType().equals(RoomEventType.SEANS))
+                .filter(x -> x.getType().equals(RoomEventType.SCREENING))
                 .count());
     }
 
@@ -99,7 +103,7 @@ public class SeansSchedulingServiceTest {
     public void shouldNotScheduleSeansWhenRoomIsOutOfService() {
     }
 
-    @Test(expected = SeansSchedulingService.ScheduledOutsideHoursRequiredForPremierException.class)
+    @Test(expected = ScheduledOutsideHoursRequiredForPremierException.class)
     public void shouldNotSchedulePremierOnlyOutsideDefinedTimeWindow() {
         Settings settings = new Settings();
         settings.setPremieresRequiredSchedule(new TimeFrame(17, 21));
@@ -113,7 +117,7 @@ public class SeansSchedulingServiceTest {
         Seans seans = service.scheduleSeans(movie, room, scheduledAt);
     }
 
-    @Test(expected = SeansSchedulingService.ScheduledOutsideOpeningHoursException.class)
+    @Test(expected = ScheduledOutsideOpeningHoursException.class)
     public void shouldNotScheduleSeansOutsideOpeningHours() {
         Settings settings = new Settings();
         settings.setOpeningHours(new TimeFrame(8, 22));

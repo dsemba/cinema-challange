@@ -13,8 +13,4 @@ public abstract class AbstractIdentifyingRepository<T extends IdentifiableEntity
                 .findFirst();
     }
 
-    @Override
-    public void delete(UUID id) {
-        findById(id).ifPresent(entities::remove);
-    }
 }
